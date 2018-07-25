@@ -63,17 +63,44 @@ func TestListClone(t *testing.T) {
 	if list == second {
 		t.Errorf("Got two list is the same :%v expected %v, %p and %p", true, false, list, second)
 	}
-	// if actualValue := second.Contains(2); actualValue != true {
-	// 	t.Errorf("Got %v expected %v", actualValue, true)
-	// }
-	// if actualValue := second.Size(); actualValue != 2 {
-	// 	t.Errorf("Got %v expected %v", actualValue, 2)
-	// }
+	if actualValue := second.Contains(2); actualValue != true {
+		t.Errorf("Got %v expected %v", actualValue, true)
+	}
+	if actualValue := second.Size(); actualValue != 2 {
+		t.Errorf("Got %v expected %v", actualValue, 2)
+	}
 }
 
 func TestListRemove(t *testing.T) {
 	list := New()
 	list.Add(1)
 	list.Add(2)
+
+	if actualValue, _ := list.Remove(1); actualValue != 2 {
+		t.Errorf("Remove %v expected %v", actualValue, 2)
+	}
+
+	if nil, err := list.Remove(1); err == nil {
+		t.Errorf("Remove expected %v", err.Error())
+	}
+	list.Add(3, 4, 5, 6)
+	list.Remove(3)
 	t.Logf("%+v", list)
+}
+
+func BenchmarkListInsert(b *testing.B) {
+	b.Log(b.N)
+	l := New()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		l.Insert(0, i)
+	}
+}
+func BenchmarkListAddAt(b *testing.B) {
+	b.Log(b.N)
+	l := New()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		l.AddAt(0, i)
+	}
 }

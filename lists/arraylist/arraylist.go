@@ -114,7 +114,42 @@ func (l *List) IndexOf(obj interface{}) int {
 }
 
 func (l *List) Clone() *List {
-	return New()
+	newone := New()
+	newone.objects = make([]interface{}, len(l.objects))
+	copy(newone.objects, l.objects)
+	newone.size = l.size
+	return newone
+}
+
+func (l *List) Sort() {
+
+}
+
+/**
+ * Clear removes all elements from the list.
+ * Here, we let GC do it
+ */
+func (l *List) Clear() {
+	l.objects = make([]interface{}, 10)
+	l.size = 0
+}
+
+func (l *List) Remove(idx int) (interface{}, error) {
+	if idx < 0 || idx >= l.size {
+		return nil, errors.New("IndexOutOfBoundsException")
+	}
+	var rst interface{}
+	rst = l.objects[idx]
+	l.objects[idx] = nil
+	copy(l.objects[idx:], l.objects[idx+1:l.size])
+	l.objects[l.size-1] = nil
+	l.size--
+	// In Java ArrayList, Java won't eliminate size. so I won't implement it.
+	// However, Emir Pasic gave us the flexibilty.
+	// He supports shrink func. If you are intereted, you can go for
+	// https://github.com/emirpasic/gods/blob/bba54c718c4e39e4db35f73e0c660df44a4de4cd/lists/arraylist/arraylist.go#L204
+
+	return rst, nil
 }
 
 /**
@@ -132,6 +167,21 @@ func (l *List) resize(cap int) {
 	newObjects := make([]interface{}, cap, cap)
 	copy(newObjects, l.objects)
 	l.objects = newObjects
+}
+
+func (list *List) Insert(index int, values ...interface{}) {
+
+	l := len(values)
+	list.grow(l)
+	list.size += l
+	// Shift old to right
+	for i := list.size - 1; i >= index+l; i-- {
+		list.objects[i] = list.objects[i-l]
+	}
+	// Insert new
+	for i, value := range values {
+		list.objects[index+i] = value
+	}
 }
 
 /**
