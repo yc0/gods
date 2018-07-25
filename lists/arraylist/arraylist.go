@@ -21,6 +21,8 @@ package arraylist
 import (
 	"errors"
 	"fmt"
+
+	"github.com/yc0/gods/utils"
 )
 
 type List struct {
@@ -121,8 +123,33 @@ func (l *List) Clone() *List {
 	return newone
 }
 
-func (l *List) Sort() {
+/**
+ * We left this implementation. We can manipulate native sort way
+ * , and need to implement three methods.
 
+ * type Interface interface {
+ * 		// Len is the number of elements in the collection.
+ * 		Len() int
+ * 		// Less reports whether the element with
+ * 		// index i should sort before the element with index j.
+ * 		Less(i, j int) bool
+ * 		// Swap swaps the elements with indexes i and j.
+ * 		Swap(i, j int)
+ * }
+
+
+ * Here is implementations in Java
+ * public void sort(Comparator<? super E> c) {
+ *    final int expectedModCount = modCount;
+ *    Arrays.sort((E[]) elementData, 0, size, c);
+ *    if (modCpl[.gyfcount != expectedModCount) {
+ *        throw new ConcurrentModificationException();
+ *    }
+ *     modCount++;
+ * }
+ */
+func (l *List) Sort() {
+	utils.Sort(l.objects[:l.size]) // this way would provide high performance by constrained slice
 }
 
 /**

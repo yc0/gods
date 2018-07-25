@@ -88,6 +88,21 @@ func TestListRemove(t *testing.T) {
 	t.Logf("%+v", list)
 }
 
+func TestListSort(t *testing.T) {
+	list := New()
+	list.Add(6, 8, 3, 9, 4, 5, 2, 1, 7)
+	list.Add(-1)
+	list.Sort()
+	for i := 1; i < list.Size(); i++ {
+		first, _ := list.Get(i - 1)
+		second, _ := list.Get(i)
+		if first.(int) > second.(int) {
+			t.Error("not sorted by int")
+		}
+	}
+	t.Logf("%+v", list)
+}
+
 func BenchmarkListInsert(b *testing.B) {
 	b.Log(b.N)
 	l := New()
