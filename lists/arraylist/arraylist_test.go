@@ -104,7 +104,6 @@ func TestListSort(t *testing.T) {
 }
 
 func BenchmarkListInsert(b *testing.B) {
-	b.Log(b.N)
 	l := New()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -112,7 +111,6 @@ func BenchmarkListInsert(b *testing.B) {
 	}
 }
 func BenchmarkListAddAt(b *testing.B) {
-	b.Log(b.N)
 	l := New()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
