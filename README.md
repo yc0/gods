@@ -3,7 +3,8 @@ Mimic java data-structure for golang
 
 
 # Vector
-ArrayList may incur contention due to thread unsafe
+ArrayList may incur contention due to thread unsafe.
+
 Vector data structure can handle synchronization.
 
 Here comes the example of saling the tick
