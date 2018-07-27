@@ -2,6 +2,7 @@ package arraylist
 
 import (
 	"testing"
+	"time"
 )
 
 func TestListAdd(t *testing.T) {
@@ -102,7 +103,22 @@ func TestListSort(t *testing.T) {
 	}
 	t.Logf("%+v", list)
 }
-
+func TestArrayListMutexOperate(t *testing.T) {
+	l := New()
+	values := make([]interface{}, 10000)
+	for i := 0; i < 10000; i++ {
+		values[i] = i + 1
+	}
+	l.Add(values...)
+	for i := 0; i < 10; i++ {
+		go func() {
+			v, _ := l.Remove(0)
+			t.Logf("Sale Ticket: %v", v)
+			time.Sleep(100)
+		}()
+	}
+	time.Sleep(15000)
+}
 func BenchmarkListInsert(b *testing.B) {
 	l := New()
 	b.ResetTimer()

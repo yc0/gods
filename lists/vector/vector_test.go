@@ -2,6 +2,7 @@ package vector
 
 import (
 	"testing"
+	"time"
 )
 
 func TestVectorAdd(t *testing.T) {
@@ -104,5 +105,20 @@ func TestVectorSort(t *testing.T) {
 }
 
 func TestVectorMutexOperate(t *testing.T) {
+	l := New()
+	values := make([]interface{}, 10000)
+	for i := 0; i < 10000; i++ {
+		values[i] = i + 1
+	}
+	l.Add(values...)
 
+	for i := 0; i < 10; i++ {
+		go func() {
+			v, _ := l.Remove(0)
+			t.Logf("Sale Ticket: %v", v)
+			time.Sleep(100)
+		}()
+	}
+	// defer l.Clear()
+	time.Sleep(20000)
 }

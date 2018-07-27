@@ -16,6 +16,7 @@ package vector
 import (
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/yc0/gods/utils"
 )
@@ -23,6 +24,7 @@ import (
 type Vector struct {
 	objects []interface{}
 	size    int
+	mux     sync.Mutex
 }
 
 const (
@@ -41,11 +43,13 @@ func init() {
 }
 
 func New() *Vector {
-	return &Vector{make([]interface{}, 10), 0}
+	return &Vector{objects: make([]interface{}, 10), size: 0}
 }
 
 func (l *Vector) Add(values ...interface{}) {
 	l.grow(len(values))
+	l.mux.Lock()
+	defer l.mux.Unlock()
 	for _, val := range values {
 		l.objects[l.size] = val
 		l.size++
@@ -57,6 +61,8 @@ func (l *Vector) AddAt(index int, obj interface{}) (int, error) {
 		return -1, errors.New("out of bound")
 	}
 	l.grow(1)
+	l.mux.Lock()
+	defer l.mux.Unlock()
 	// java here adopt System.arraycopy(src, src_idx, dest, dest_idx, len)
 	copy(l.objects[index+1:], l.objects[index:])
 	l.objects[index] = obj
@@ -71,16 +77,22 @@ func (l *Vector) AddAt(index int, obj interface{}) (int, error) {
  * @return (object, error) the element at the specified position in this list
  */
 func (l *Vector) Get(idx int) (interface{}, error) {
-	if idx < 0 || idx >= l.size {
+	if idx < 0 || idx >= l.Size() {
 		return nil, errors.New("IndexOutOfBoundsException")
 	}
-	return l.objects[idx], nil
+	l.mux.Lock()
+	defer l.mux.Unlock()
+	rst := l.objects[idx]
+
+	return rst, nil
 }
 
 func (l *Vector) Set(idx int, obj interface{}) (int, error) {
-	if idx < 0 || idx >= l.size {
+	if idx < 0 || idx >= l.Size() {
 		return -1, errors.New("IndexOutOfBoundsException")
 	}
+	l.mux.Lock()
+	defer l.mux.Unlock()
 	l.objects[idx] = obj
 	return idx, nil
 }
@@ -97,10 +109,11 @@ func (l *Vector) Contains(obj interface{}) bool {
  * in this list, or -1 if this list does not contain the element.
  */
 func (l *Vector) IndexOf(obj interface{}) int {
-	if l.size == 0 {
+	if l.Size() == 0 {
 		return -1
 	}
-
+	l.mux.Lock()
+	defer l.mux.Unlock()
 	for i, o := range l.objects {
 		if o == obj {
 			return i
@@ -110,6 +123,8 @@ func (l *Vector) IndexOf(obj interface{}) int {
 }
 
 func (l *Vector) Clone() *Vector {
+	l.mux.Lock()
+	defer l.mux.Unlock()
 	newone := New()
 	newone.objects = make([]interface{}, len(l.objects))
 	copy(newone.objects, l.objects)
@@ -143,6 +158,8 @@ func (l *Vector) Clone() *Vector {
  * }
  */
 func (l *Vector) Sort() {
+	l.mux.Lock()
+	defer l.mux.Unlock()
 	utils.Sort(l.objects[:l.size]) // this way would provide high performance by constrained slice
 }
 
@@ -151,21 +168,24 @@ func (l *Vector) Sort() {
  * Here, we let GC do it
  */
 func (l *Vector) Clear() {
+	l.mux.Lock()
+	defer l.mux.Unlock()
 	l.objects = make([]interface{}, 10)
 	l.size = 0
 }
 
 func (l *Vector) Remove(idx int) (interface{}, error) {
-	if idx < 0 || idx >= l.size {
+	if idx < 0 || idx >= l.Size() {
 		return nil, errors.New("IndexOutOfBoundsException")
 	}
 	var rst interface{}
+	l.mux.Lock()
+	defer l.mux.Unlock()
 	rst = l.objects[idx]
 	l.objects[idx] = nil
 	copy(l.objects[idx:], l.objects[idx+1:l.size])
 	l.objects[l.size-1] = nil
 	l.size--
-
 	return rst, nil
 }
 
@@ -173,32 +193,22 @@ func (l *Vector) Remove(idx int) (interface{}, error) {
  * Size returns number of elements within the list.
  */
 func (l *Vector) Size() int {
-	return l.size
+	l.mux.Lock()
+	rst := l.size
+	defer l.mux.Unlock()
+	return rst
 }
 
 func (l *Vector) IsEmpty() bool {
-	return l.size == 0
+	return l.Size() == 0
 }
 
 func (l *Vector) resize(cap int) {
-	newObjects := make([]interface{}, cap, cap)
+	l.mux.Lock()
+	defer l.mux.Unlock()
+	newObjects := make([]interface{}, cap)
 	copy(newObjects, l.objects)
 	l.objects = newObjects
-}
-
-func (list *Vector) Insert(index int, values ...interface{}) {
-
-	l := len(values)
-	list.grow(l)
-	list.size += l
-	// Shift old to right
-	for i := list.size - 1; i >= index+l; i-- {
-		list.objects[i] = list.objects[i-l]
-	}
-	// Insert new
-	for i, value := range values {
-		list.objects[index+i] = value
-	}
 }
 
 /**
@@ -208,8 +218,10 @@ func (list *Vector) Insert(index int, values ...interface{}) {
  * @param n the desired minimum capacity
  */
 func (l *Vector) grow(n int) {
+	l.mux.Lock()
 	oldCapacity := cap(l.objects)
-	if l.size+n >= oldCapacity {
+	l.mux.Unlock()
+	if l.Size()+n >= oldCapacity {
 		newCapacity := oldCapacity + (oldCapacity >> 1)
 		if newCapacity-n < 0 {
 			newCapacity = n
