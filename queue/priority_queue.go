@@ -48,6 +48,22 @@ func New() *PriorityQueue {
 }
 
 /*
+NewSlice denotes new a priorityqueue with a slice
+*/
+func NewSlice(a ...interface{}) *PriorityQueue {
+	size := len(a)
+	if size < 11 {
+		size = 11
+	}
+	slice := make([]interface{}, size)
+	copy(slice, a)
+	pq := &PriorityQueue{slice, len(a)}
+	fmt.Printf("+%v", pq)
+	pq.heapify()
+	return pq
+}
+
+/*
 Clear removes all elements from the list.
 Here, we let GC do it.
 The queue will be empty after this call returns
@@ -108,18 +124,46 @@ func (pq *PriorityQueue) Peek() interface{} {
 	}
 	return pq.queue[0]
 }
-func (pq *PriorityQueue) Remove() bool {
-	return false
+
+/*
+Remove a single instance of the specified element from this queue,
+if it is present.
+*/
+func (pq *PriorityQueue) Remove(o interface{}) bool {
+	idx := pq.indexOf(o)
+	if idx == -1 {
+		return false
+	}
+	pq.removeAt(idx)
+	return true
 }
 
-func (pq *PriorityQueue) findSlot(start int) int {
+/*
+Contains the specified element or not
+*/
+func (pq *PriorityQueue) Contains(o interface{}) bool {
+	return pq.indexOf(o) != -1
+}
+
+func (pq *PriorityQueue) indexOf(o interface{}) int {
+	if o != nil {
+		for i, v := range pq.queue {
+			if v == o {
+				return i
+			}
+		}
+	}
 	return -1
 }
-
-func (pq *PriorityQueue) bubbleUp(index int) {
-
+func (pq *PriorityQueue) removeAt(idx int) interface{} {
+	pq.size--
+	rst := pq.queue[pq.size]
+	pq.queue[pq.size] = nil
+	if idx == pq.size {
+		return rst
+	}
+	pq.siftDown(idx, rst)
 }
-
 func (pq *PriorityQueue) siftUp(k int, x interface{}) {
 	// while (k > 0) {
 	// 	int parent = (k - 1) >>> 1;
@@ -168,8 +212,8 @@ func (pq *PriorityQueue) resize(cap int) {
 }
 
 func (pq *PriorityQueue) heapify() {
-	for i := (uint(pq.size)>>1 - 1); i >= 0; i-- {
-		pq.siftDown(int(i), pq.queue[i])
+	for i := (pq.size>>1 - 1); i >= 0; i-- {
+		pq.siftDown(i, pq.queue[i])
 	}
 }
 
@@ -186,7 +230,6 @@ func (pq *PriorityQueue) siftDown(k int, x interface{}) {
 			// right is smaller
 			c, child = pq.queue[right], right
 		}
-		fmt.Println(x, c, comparator(x, c))
 		if comparator(x, c) <= 0 {
 			// current parent is the smallest
 			break

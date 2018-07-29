@@ -6,6 +6,7 @@ type Queue interface {
 	Offer(o ...interface{}) (bool, error)
 	Peek() interface{}
 	Poll() interface{}
-	Remove() bool
+	Remove(o interface{}) bool
 	Size() interface{}
+	Contains(o interface{}) bool
 }

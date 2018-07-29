@@ -20,5 +20,34 @@ func TestQueueAppendPoll(t *testing.T) {
 		}
 		prev = c
 	}
+}
 
+func TestQueueNewSlice(t *testing.T) {
+	a := []interface{}{9, 8, 7, 6, 5, 4, 3, 2, -1, 0}
+	pq := NewSlice(a...)
+	size := pq.Size()
+	k, half := 0, size>>1
+	for k < half {
+		left := k<<1 + 1
+		right := left + 1
+		if right < size && pq.queue[right].(int) < pq.queue[k].(int) {
+			t.Errorf("expect right child(%v) is bigger than its parent(%v)", pq.queue[right], pq.queue[k])
+		}
+		if pq.queue[left].(int) < pq.queue[k].(int) {
+			t.Errorf("expect left child(%v) is bigger than its parent(%v)", pq.queue[left], pq.queue[k])
+		}
+		k = left
+	}
+	k = 0
+	for k < half {
+		left := k<<1 + 1
+		right := left + 1
+		if right < size && pq.queue[right].(int) < pq.queue[k].(int) {
+			t.Errorf("expect right child(%v) is bigger than its parent(%v)", pq.queue[right], pq.queue[k])
+		}
+		if pq.queue[left].(int) < pq.queue[k].(int) {
+			t.Errorf("expect left child(%v) is bigger than its parent(%v)", pq.queue[left], pq.queue[k])
+		}
+		k = right
+	}
 }
