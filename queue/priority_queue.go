@@ -27,7 +27,7 @@ func init() {
 	 |     ___/\_  __ \  |/  _ \_  __ \  \   __<   |  | /  / \  \|  |  \_/ __ \|  |  \_/ __ \ 
 	 |    |     |  | \/  (  <_> )  | \/  ||  |  \___  |/   \_/.  \  |  /\  ___/|  |  /\  ___/ 
 	 |____|     |__|  |__|\____/|__|  |__||__|  / ____|\_____\ \_/____/  \___  >____/  \___  >
-                                                \/            \__>           \/            \/ 
+	                                            \/            \__>           \/            \/ 
 	`
 	fmt.Println(ansii)
 }
@@ -131,6 +131,35 @@ func (pq *PriorityQueue) resize(cap int) {
 	newObjects := make([]interface{}, cap)
 	copy(newObjects, pq.queue)
 	pq.queue = newObjects
+}
+
+func (pq *PriorityQueue) heapify() {
+	for i := (uint(pq.size)>>1 - 1); i >= 0; i-- {
+		pq.siftDown(int(i), pq.queue[i])
+	}
+}
+
+func (pq *PriorityQueue) siftDown(k int, x interface{}) {
+	half := uint(k) >> 1 // loop while a none-leaf
+	for k < int(half) {
+		child := k<<1 + 1
+		right := child + 1
+		c := pq.queue[child]
+		comparator := utils.GetComparator(c)
+		// find left and right trees whose values is the smallest
+		if right < pq.size && comparator(c, pq.queue[right]) > 0 {
+			// right is smaller
+			c, child = pq.queue[right], right
+		}
+		if comparator(x, c) <= 0 {
+			// current parent is the smallest
+			break
+		}
+		// otherwise, go through down
+		pq.queue[k] = c
+		k = child
+	}
+	pq.queue[k] = x
 }
 
 // Offer(o interface{}) bool
