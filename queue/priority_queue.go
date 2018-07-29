@@ -32,17 +32,29 @@ func init() {
 	fmt.Println(ansii)
 }
 
+/*
+PriorityQueue struct
+*/
 type PriorityQueue struct {
 	queue []interface{}
 	size  int
 }
 
+/*
+New PriorityQueue
+*/
 func New() *PriorityQueue {
 	return &PriorityQueue{make([]interface{}, 11), 0}
 }
 
+/*
+Clear removes all elements from the list.
+Here, we let GC do it.
+The queue will be empty after this call returns
+*/
 func (pq *PriorityQueue) Clear() {
-
+	pq.queue = make([]interface{}, 11)
+	pq.size = 0
 }
 
 /*
@@ -68,11 +80,33 @@ func (pq *PriorityQueue) Add(o ...interface{}) (bool, error) {
 	return pq.Offer(o...)
 }
 
+/*
+Poll queue, and represent the smallest in the queue.
+Then, sift down the bigger one to recliam smallest one on the top again
+*/
 func (pq *PriorityQueue) Poll() interface{} {
-	return nil
+	if pq.size == 0 {
+		return nil
+	}
+	pq.size--
+	rst := pq.queue[0]
+	e := pq.queue[pq.size]
+	pq.queue[pq.size] = nil
+	if pq.size != 0 {
+		pq.siftDown(0, e)
+	}
+	return rst
 }
+
+/*
+Peek first element of queue. In other words, no poll
+element of queue, but take a look
+*/
 func (pq *PriorityQueue) Peek() interface{} {
-	return nil
+	if pq.size == 0 {
+		return nil
+	}
+	return pq.queue[0]
 }
 func (pq *PriorityQueue) Remove() bool {
 	return false
@@ -140,17 +174,19 @@ func (pq *PriorityQueue) heapify() {
 }
 
 func (pq *PriorityQueue) siftDown(k int, x interface{}) {
-	half := uint(k) >> 1 // loop while a none-leaf
+	half := uint(pq.size) >> 1 // loop while a none-leaf
 	for k < int(half) {
 		child := k<<1 + 1
 		right := child + 1
 		c := pq.queue[child]
 		comparator := utils.GetComparator(c)
+
 		// find left and right trees whose values is the smallest
 		if right < pq.size && comparator(c, pq.queue[right]) > 0 {
 			// right is smaller
 			c, child = pq.queue[right], right
 		}
+		fmt.Println(x, c, comparator(x, c))
 		if comparator(x, c) <= 0 {
 			// current parent is the smallest
 			break
@@ -166,4 +202,6 @@ func (pq *PriorityQueue) siftDown(k int, x interface{}) {
 // Peek() interface{}
 // Poll() interface{}
 // Remove() bool
-// Size() interface{}
+func (pq *PriorityQueue) Size() int {
+	return pq.size
+}
