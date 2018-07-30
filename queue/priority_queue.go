@@ -155,14 +155,33 @@ func (pq *PriorityQueue) indexOf(o interface{}) int {
 	}
 	return -1
 }
-func (pq *PriorityQueue) removeAt(idx int) interface{} {
+
+/**
+ * Removes the ith element from queue.
+ *
+ * Normally this method leaves the elements at up to i-1,
+ * inclusive, untouched.  Under these circumstances, it returns
+ * null.  Occasionally, in order to maintain the heap invariant,
+ * it must swap a later element of the list with one earlier than
+ * i.  Under these circumstances, this method returns the element
+ * that was previously at the end of the list and is now at some
+ * position before i. This fact is used by iterator.remove so as to
+ * avoid missing traversing elements.
+ */
+func (pq *PriorityQueue) removeAt(idx int) {
 	pq.size--
 	rst := pq.queue[pq.size]
 	pq.queue[pq.size] = nil
 	if idx == pq.size {
-		return rst
+		return
 	}
 	pq.siftDown(idx, rst)
+	if pq.queue[idx] == rst {
+		// bubble up util idx
+		// so we keep checking if it can be bubbled up
+		pq.siftUp(idx, rst)
+
+	}
 }
 func (pq *PriorityQueue) siftUp(k int, x interface{}) {
 	// while (k > 0) {
@@ -241,10 +260,9 @@ func (pq *PriorityQueue) siftDown(k int, x interface{}) {
 	pq.queue[k] = x
 }
 
-// Offer(o interface{}) bool
-// Peek() interface{}
-// Poll() interface{}
-// Remove() bool
+/*
+Size is shown
+*/
 func (pq *PriorityQueue) Size() int {
 	return pq.size
 }
