@@ -85,9 +85,12 @@ func (m *Map) GetOrDefault(key, v interface{}) interface{} {
 Replace implementation
 */
 func (m *Map) Replace(k, v, new interface{}) bool {
-	if _, ok := m.m[k]; ok {
-		m.m[k] = new
-		return true
+	if val, ok := m.m[k]; ok {
+		if val == v {
+			m.m[k] = new
+			return true
+		}
+
 	}
 	return false
 }
